@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask , render_template
 import socket
 
 ###### App setup
@@ -17,7 +17,7 @@ def health():
 @app.route('/')
 def home():
     hostname = socket.gethostname()
-    return "Hello, World! runing on host: " + hostname
+    return render_template('landingPage.html', hostname=hostname)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80)

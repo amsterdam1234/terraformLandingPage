@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+Monitoring Overview
+The monitoring architecture for the Terraform-monitored Flask web server includes two main components:
+
+AWS CloudWatch
+Prometheus
+AWS CloudWatch
+AWS CloudWatch is used to collect logs and metrics from the infrastructure. It provides monitoring and alerting capabilities for the deployed resources.
+
+CloudWatch Alerts
+The following CloudWatch alerts have been configured:
+
+CPU Utilization for Auto Scaling Group (ASG) EC2 Instances: This alert triggers when the average CPU utilization of the EC2 instances in the ASG exceeds a specified threshold. This triggers a scaling policy to scale up the infrastructure.
+CPU Utilization for the Bastion Host & Prometheus: This alert triggers when the average CPU utilization of the Bastion Host and Prometheus server exceeds a specified threshold.
+High request count for the Elastic Load Balancer (ELB): This alert triggers when the number of requests to the ELB exceeds a specified threshold.
+High latency for the ELB: This alert triggers when the latency of the ELB exceeds a specified threshold.
+High HTTP 4XX count for the ELB: This alert triggers when the number of HTTP 4XX errors from the ELB exceeds a specified threshold.
+Prometheus
+Prometheus is used to monitor the system and application performance. It collects metrics from the infrastructure components.
+
+Prometheus Configuration
+The following Prometheus components have been configured:
+
+Node Exporter: This component collects metrics from the instances, and exposes them on port 9100.
+Prometheus Server: This component collects and visualizes the metrics from the Node Exporter. The Prometheus web UI and API are accessible on port 9090.
+To access the Prometheus web UI, you can use the public IP address of the Bastion Host and navigate to http://<bastion_host_public_ip>:9090.
+
+
+</body>
+</html>

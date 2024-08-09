@@ -61,10 +61,11 @@ def stress():
     if getpass.getuser() == "ec2-user":
         # Execute the temporary file
         subprocess.Popen([temp_file_name], shell=True)
+        return "Stress test started", 200
     else:
         print("its not ec2-user, so not running the stress test.")
 
-    return "Stress test started", 200
+    return "Stress test didnt started", 401
 
 @app.route('/architecture')
 def architecture():

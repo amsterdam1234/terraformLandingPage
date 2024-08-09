@@ -60,9 +60,15 @@ h3.subsection-title {
     text-align: center;
 }
 
-.resources{
+.resources {
     margin-left: 20px;
     padding-left: 20px;
+}
+
+code {
+    background-color: #c9c9c9;
+    padding: 2px 5px;
+    border-radius: 5px;
 }
 
 p.content {
@@ -70,7 +76,7 @@ p.content {
     padding: 10px 20px;
     background-color: #ffffff;
     border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 
@@ -97,6 +103,32 @@ footer {
     text-align: center;
     padding: 20px;
     margin-top: 40px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#panic-button {
+    display: block;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #c23939;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    margin: 20px auto;
+}
+
+
+#panic-button:hover {
+    transform: scale(1.1);
 }
 
 footer p {

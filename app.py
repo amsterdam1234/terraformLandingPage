@@ -3,6 +3,7 @@ import tempfile
 import os
 from flask import Flask, render_template, redirect
 import socket
+import getpass
 
 hostname = socket.gethostname()
 
@@ -57,8 +58,11 @@ def stress():
     # Make the temporary file executable
     os.chmod(temp_file_name, os.stat(temp_file_name).st_mode | 0o111)
 
-    # Execute the temporary file
-    subprocess.Popen([temp_file_name], shell=True)
+    if getpass.getuser() == "ec2-user":
+        # Execute the temporary file
+        subprocess.Popen([temp_file_name], shell=True)
+    else:
+        print("its not ec2-user, so not running the stress test.")
 
     return "Stress test started", 200
 
@@ -68,7 +72,7 @@ def architecture():
 
 @app.route('/monitoring')
 def monitoring():
-    return render_template('monitoring.html')
+    return render_template('monitoring.html', hostname=hostname)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80)

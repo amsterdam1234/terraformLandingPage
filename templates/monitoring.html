@@ -28,60 +28,105 @@
     monitoring and alerting
     capabilities for the deployed resources.</p>
 <div class="resources">
-<h4 class="subsubsection-title"> CloudWatch Alerts </h4>
-The following CloudWatch alerts have been configured:
-<ul class="list">
-    <li><strong>CPU Utilization</strong> for Auto Scaling Group (ASG) EC2 Instances: This alert triggers when the average
-        CPU utilization of the
-        EC2 instances in the ASG exceeds a specified threshold. This triggers a scaling policy to scale up the
-        infrastructure.
-    </li>
-    <li><strong>CPU Utilization</strong> for the Bastion Host & Prometheus: This alert triggers when the average CPU
-        utilization of the Bastion
-        Host and Prometheus server exceeds a specified threshold.
-    </li>
-    <li><strong>High request count</strong> for the Elastic Load Balancer (ELB): This alert triggers when the number of requests to the ELB
-exceeds a specified threshold.
-    </li>
-    <li><strong>High latency</strong> for the ELB: This alert triggers when the latency of the ELB exceeds a specified threshold.
-    </li>
-    <li><strong>High HTTP 4XX count</strong> for the ELB: This alert triggers when the number of HTTP 4XX errors from the ELB exceeds a specified
-</ul>
-    </div>
+    <h4 class="subsubsection-title"> CloudWatch Alerts </h4>
+    The following CloudWatch alerts have been configured:
+    <ul class="list">
+        <li><strong>CPU Utilization</strong> for Auto Scaling Group (ASG) EC2 Instances: This alert triggers when the
+            average
+            CPU utilization of the
+            EC2 instances in the ASG exceeds a specified threshold. This triggers a scaling policy to scale up the
+            infrastructure.
+        </li>
+        <li><strong>CPU Utilization</strong> for the Bastion Host & Prometheus: This alert triggers when the average CPU
+            utilization of the Bastion
+            Host and Prometheus server exceeds a specified threshold.
+        </li>
+        <li><strong>High request count</strong> for the Elastic Load Balancer (ELB): This alert triggers when the number
+            of requests to the ELB
+            exceeds a specified threshold.
+        </li>
+        <li><strong>High latency</strong> for the ELB: This alert triggers when the latency of the ELB exceeds a
+            specified threshold.
+        </li>
+        <li><strong>High HTTP 4XX count</strong> for the ELB: This alert triggers when the number of HTTP 4XX errors
+            from the ELB exceeds a specified
+    </ul>
+</div>
 <h3 id="prometheus" class="subsection-title">Prometheus</h3>
 <p class="content">Prometheus is used to monitor the system and application performance. It collects metrics from the
     infrastructure components in our case from the EC2s.</p>
 <div class="resources">
-<h4 class="subsubsection-title"> Prometheus Configuration </h4>
-The following Prometheus components have been configured:
-<ul class="list">
-    <li><strong>Node Exporter:</strong> This component collects metrics from the instances, and exposes them on port 9100.
-    </li>
-    <li><strong>Prometheus Server:</strong> This component collects and visualizes the metrics from the Node Exporter. The Prometheus web UI and
-        API are accessible on port 9090.
-    </li>
-</ul>
+    <h4 class="subsubsection-title"> Prometheus Configuration </h4>
+    The following Prometheus components have been configured:
+    <ul class="list">
+        <li><strong>Node Exporter:</strong> This component collects metrics from the instances, and exposes them on port
+            9100.
+        </li>
+        <li><strong>Prometheus Server:</strong> This component collects and visualizes the metrics from the Node
+            Exporter. The Prometheus web UI and
+            API are accessible on port 9090.
+        </li>
+        <li>
+            <strong>Prometheus web UI:</strong> The Prometheus web UI can be accessed on port 9090 using
+            <code>http://prometheus.omer-amsterdam.com:9090</code>. <br> Alternatively, you can use the Bastion's public
+            IP
+            at
+            <code>http://&lt;bastion_host_public_ip&gt;:9090</code>.
+        </li>
+    </ul>
 </div>
-<h2 class="section-title">Lets Panic</h2>
-<p class="content"></p>
-
-
-
-
-To access the Prometheus web UI, you can use the public IP address of the Bastion Host and navigate to http://<
-bastion_host_public_ip >:9090.
-
-
-
-
-
-
-
-
-
-
+<h2 class="section-title">Let's Panic</h2>
+<p class="content">Let's test the monitoring system's behavior when the "Let's Panic" button is pressed, which will
+    increase the CPU usage of the instance using the "stress" command.<br>
+    We are expecting to see the following two things:</p>
+<div class="resources">
+    <h4 class="subsubsection-title">CloudWatch Alarm and Auto Scaling Group (ASG) Scaling</h4>
+    <ul class="list">
+        <li>When the "Let's Panic" button is pressed, it will increase the CPU usage of the instance using the "stress"
+            command.
+        </li>
+        <li>This should trigger a CloudWatch alarm that is set up to monitor the CPU utilization of the instance.</li>
+        <li>The CloudWatch alarm should then trigger the Auto Scaling Group (ASG) to launch a new instance to handle the
+            increased load.
+        </li>
+        <li>You can verify this by checking the EC2 tab in the AWS console, where you should see the new instance being
+            launched.
+        </li>
+    </ul>
+    <h4 class="subsubsection-title">Prometheus</h4>
+    <ul class="list">
+        <li>Prometheus is set up to monitor the CPU usage of the instances.</li>
+        <li>You can use the following Prometheus query to check the CPU usage percentage per instance: <code>100-(100*avg(rate(node_cpu_seconds_total{mode="idle"}[1m]))BY(instance))</code>
+        </li>
+        <li>This query calculates the CPU usage percentage by subtracting the idle CPU time from 100%.</li>
+        <li>You should see the CPU usage metric increasing on the Prometheus web UI after the "Let's Panic" button is
+            pressed.
+        </li>
+        <li><strong>If you are unable to access the Prometheus web UI due to DNS propagation, you can use the Bastion
+            host's public IP address to access the Prometheus web UI as mentioned.</strong></li>
+    </ul>
+</div>
+<div class="button-container">
+    <button id="panic-button" class="button" >Let's Panic</button>
+</div>
 <footer>
     <p>&copy; 2024 Omer's Terraform Project.<br> All rights reserved.</p>
 </footer>
+
+<script>
+    var panicButton = document.getElementById("panic-button");
+    var hostname = "{{hostname}}";
+    panicButton.addEventListener("click", function() {
+        fetch("/stress")
+            .then(response => response.text())
+            .then(result => {
+                console.log(result);
+                panicButton.disabled = true; // disable the button after it's clicked
+                panicButton.innerHTML = "Panicking <br>" + hostname + "...";
+            })
+            .catch(error => console.log('error', error));
+    });
+</script>
+
 </body>
 </html>

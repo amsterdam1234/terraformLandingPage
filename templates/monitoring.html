@@ -2,35 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring</title>
+    <link rel="stylesheet" href="static/css/monitoring.css">
 </head>
 <body>
-Monitoring Overview
-The monitoring architecture for the Terraform-monitored Flask web server includes two main components:
-
-AWS CloudWatch
-Prometheus
-AWS CloudWatch
-AWS CloudWatch is used to collect logs and metrics from the infrastructure. It provides monitoring and alerting capabilities for the deployed resources.
-
-CloudWatch Alerts
+<header>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/architecture">Architecture</a>
+        <a href="/monitoring">Monitoring</a>
+        <a href="/promethuse">Promethuse</a>
+    </nav>
+</header>
+<h2 class="section-title">Monitoring Overview</h2>
+<p class="content">In this Terraform project, monitoring is implemented using both AWS CloudWatch and Prometheus. AWS
+    CloudWatch is configured to monitor and alert on key metrics such as high CPU utilization on EC2 instances, high
+    request count on the Elastic Load Balancer (ELB), HTTP 4xx error counts, and latency. On the other hand, Prometheus,
+    deployed on a bastion host, provides a powerful time-series monitoring service, collecting metrics from configured
+    targets at given intervals, evaluating rule expressions, and can trigger alerts if certain conditions are
+    observed.</p>
+<h2 id="project-architecture-and-components" class="section-title">Monitoring Components</h2>
+<h3 id="cloudwatch" class="subsection-title">CloudWatch</h3>
+<p class="content">AWS CloudWatch is used to collect logs and metrics from the infrastructure in AWS. It provides
+    monitoring and alerting
+    capabilities for the deployed resources.</p>
+<div class="resources">
+<h4 class="subsubsection-title"> CloudWatch Alerts </h4>
 The following CloudWatch alerts have been configured:
-
-CPU Utilization for Auto Scaling Group (ASG) EC2 Instances: This alert triggers when the average CPU utilization of the EC2 instances in the ASG exceeds a specified threshold. This triggers a scaling policy to scale up the infrastructure.
-CPU Utilization for the Bastion Host & Prometheus: This alert triggers when the average CPU utilization of the Bastion Host and Prometheus server exceeds a specified threshold.
-High request count for the Elastic Load Balancer (ELB): This alert triggers when the number of requests to the ELB exceeds a specified threshold.
-High latency for the ELB: This alert triggers when the latency of the ELB exceeds a specified threshold.
-High HTTP 4XX count for the ELB: This alert triggers when the number of HTTP 4XX errors from the ELB exceeds a specified threshold.
-Prometheus
-Prometheus is used to monitor the system and application performance. It collects metrics from the infrastructure components.
-
-Prometheus Configuration
+<ul class="list">
+    <li><strong>CPU Utilization</strong> for Auto Scaling Group (ASG) EC2 Instances: This alert triggers when the average
+        CPU utilization of the
+        EC2 instances in the ASG exceeds a specified threshold. This triggers a scaling policy to scale up the
+        infrastructure.
+    </li>
+    <li><strong>CPU Utilization</strong> for the Bastion Host & Prometheus: This alert triggers when the average CPU
+        utilization of the Bastion
+        Host and Prometheus server exceeds a specified threshold.
+    </li>
+    <li><strong>High request count</strong> for the Elastic Load Balancer (ELB): This alert triggers when the number of requests to the ELB
+exceeds a specified threshold.
+    </li>
+    <li><strong>High latency</strong> for the ELB: This alert triggers when the latency of the ELB exceeds a specified threshold.
+    </li>
+    <li><strong>High HTTP 4XX count</strong> for the ELB: This alert triggers when the number of HTTP 4XX errors from the ELB exceeds a specified
+</ul>
+    </div>
+<h3 id="prometheus" class="subsection-title">Prometheus</h3>
+<p class="content">Prometheus is used to monitor the system and application performance. It collects metrics from the
+    infrastructure components in our case from the EC2s.</p>
+<div class="resources">
+<h4 class="subsubsection-title"> Prometheus Configuration </h4>
 The following Prometheus components have been configured:
+<ul class="list">
+    <li><strong>Node Exporter:</strong> This component collects metrics from the instances, and exposes them on port 9100.
+    </li>
+    <li><strong>Prometheus Server:</strong> This component collects and visualizes the metrics from the Node Exporter. The Prometheus web UI and
+        API are accessible on port 9090.
+    </li>
+</ul>
+</div>
+<h2 class="section-title">Lets Panic</h2>
+<p class="content"></p>
 
-Node Exporter: This component collects metrics from the instances, and exposes them on port 9100.
-Prometheus Server: This component collects and visualizes the metrics from the Node Exporter. The Prometheus web UI and API are accessible on port 9090.
-To access the Prometheus web UI, you can use the public IP address of the Bastion Host and navigate to http://<bastion_host_public_ip>:9090.
 
 
+
+To access the Prometheus web UI, you can use the public IP address of the Bastion Host and navigate to http://<
+bastion_host_public_ip >:9090.
+
+
+
+
+
+
+
+
+
+
+<footer>
+    <p>&copy; 2024 Omer's Terraform Project.<br> All rights reserved.</p>
+</footer>
 </body>
 </html>

@@ -66,5 +66,9 @@ def stress():
 def architecture():
     return render_template('architecture.html')
 
+@app.route('/monitoring')
+def monitoring():
+    return render_template('monitoring.html')
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80)

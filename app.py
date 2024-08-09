@@ -58,14 +58,13 @@ def stress():
     # Make the temporary file executable
     os.chmod(temp_file_name, os.stat(temp_file_name).st_mode | 0o111)
 
-    if getpass.getuser() == "ec2-user":
-        # Execute the temporary file
-        subprocess.Popen([temp_file_name], shell=True)
-        return "Stress test started", 200
-    else:
+    if getpass.getuser().find("omer") != -1:
         print("its not ec2-user, so not running the stress test.")
+        return "Stress test didnt started", 401
 
-    return "Stress test didnt started", 401
+    # Execute the temporary file
+    subprocess.Popen([temp_file_name], shell=True)
+    return "Stress test started", 200
 
 @app.route('/architecture')
 def architecture():

@@ -47,7 +47,7 @@ def stress():
 
      # Activate stress
      echo "Activating stress..."
-     stress --cpu 4 --timeout 600
+     stress --cpu 2 --timeout 600
      """
 
     # Write the command to a temporary file

@@ -74,5 +74,12 @@ def architecture():
 def monitoring():
     return render_template('monitoring.html', hostname=hostname)
 
+@app.errorhandler(500)
+def internal_error(exception):
+    app.logger.error(exception)
+    return render_template('500.html', error=exception), 500
+
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80)

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture</title>
+    <link rel="stylesheet" href="static/css/architecture.css">
+</head>
+<body>
+<header>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/architecture">Architecture</a>
+        <a href="/monitoring">Monitoring</a>
+        <a href="/promethuse">Promethuse</a>
+    </nav>
+</header>
+<h2 id="project-overview" class="section-title">Project Overview</h2>
+<p class="content">This project utilizes Infrastructure as Code (IaC) principles through Terraform to automate the
+    creation and management of AWS resources required to run a monitored Flask web server.</p>
+<h2 id="project-architecture-and-components" class="section-title">Project Architecture and Components</h2>
+<p class="content">The project is composed of several AWS resources:</p>
+<img src="static/photos/terraform project.jpg" alt="Terraform Project Architecture" class="image">
+<h3 id="aws-resources" class="subsection-title">AWS Resources</h3>
+<div class="resources">
+    <h4 id="vpc---virtual-private-cloud" class="subsubsection-title">VPC - Virtual Private Cloud</h4>
+    <ul class="list">
+        <li><strong>Description</strong>: A VPC is created to isolate the resources within the project.</li>
+        <li><strong>CIDR Block</strong>: <code>10.0.0.0/26</code> for 64 IP addresses.</li>
+    </ul>
+    <h4 id="subnets---public-and-private-subnets" class="subsubsection-title">Subnets - Public and Private Subnets</h4>
+    <h5 class="subsubsubsection-title">Public Subnet</h5>
+    <ul class="list">
+        <li><strong>CIDR Block</strong>: <code>10.0.0.0/28</code></li>
+        <li><strong>Components</strong>:
+            <ul class="nested-list">
+                <li><strong>Bastion Host &amp; Prometheus</strong>: Used for secure SSH access to instances in the
+                    private subnet and to present and collect metrics from Prometheus.
+                </li>
+                <li><strong>NAT Gateway</strong>: Allows instances in the private subnet to access the internet without
+                    exposing them to inbound internet traffic.
+                </li>
+                <li><strong>Elastic IP</strong>: A static public IP address associated with the NAT Gateway.</li>
+            </ul>
+        </li>
+    </ul>
+    <h5 class="subsubsubsection-title">Private Subnet</h5>
+    <ul class="list">
+        <li><strong>CIDR Block</strong>: <code>10.0.0.16/28</code></li>
+        <li><strong>Components</strong>:
+            <ul class="nested-list">
+                <li><strong>Auto Scaling Group</strong>: Automatically adjusts the number of EC2 instances based on
+                    demand.
+                </li>
+                <li><strong>EC2 Instances from the ASG</strong>: Hosts the Flask web application.</li>
+            </ul>
+        </li>
+    </ul>
+    <h4 id="security-groups" class="subsubsection-title">Security Groups</h4>
+    <ul class="list">
+        <li><strong>Description</strong>: Define rules for inbound and outbound traffic.</li>
+        <li><strong>Components</strong>:
+            <ul class="nested-list">
+                <li><strong>Bastion Host &amp; Prometheus Security Group</strong>:
+                    <ul class="nested-list">
+                        <li><strong>Port 22</strong>: SSH access for secure management.</li>
+                        <li><strong>Port 9090</strong>: Access to Prometheus web UI and API.</li>
+                        <li><strong>Port 9100</strong>: Node Exporter for Prometheus monitoring - allow scraping the
+                            metrics.
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>NAT Gateway Security Group</strong>: Manages internet access for private instances.</li>
+                <li><strong>EC2 Instances Security Group</strong>:
+                    <ul class="nested-list">
+                        <li><strong>Port 80</strong>: HTTP access for the Flask application.</li>
+                        <li><strong>Port 443</strong>: HTTPS access for the Flask application.</li>
+                        <li><strong>Port 9100</strong>: Node Exporter for Prometheus monitoring - allow scraping the
+                            metrics.
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>ELB Security Group</strong>:
+                    <ul class="nested-list">
+                        <li><strong>Port 80</strong>: HTTP access for load balancing web traffic.</li>
+                        <li><strong>Port 443</strong>: HTTPS access for load balancing web traffic.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h4 id="internet-gateway" class="subsubsection-title">Internet Gateway</h4>
+    <ul class="list">
+        <li><strong>Description</strong>: Connects the VPC to the internet.</li>
+        <li><strong>Components</strong>:
+            <ul class="nested-list">
+                <li><strong>NAT Gateway</strong>: Allows instances in the private subnet to access the internet without
+                    exposing them to inbound internet traffic.
+                </li>
+                <li><strong>Internet Gateway</strong>: Provides a path for inbound and outbound internet traffic.</li>
+            </ul>
+        </li>
+    </ul>
+    <h4 id="route-table" class="subsubsection-title">Route Table</h4>
+    <ul class="list">
+        <li><strong>Description</strong>: Manages routing of network traffic within the VPC.</li>
+        <li><strong>Components</strong>:
+            <ul class="nested-list">
+                <li><strong>Public Route Table</strong>: Routes traffic from the public subnet to the internet gateway.
+                </li>
+                <li><strong>Private Route Table</strong>: Routes traffic from the private subnet to the NAT Gateway.
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h4 id="elastic-load-balancer-elb" class="subsubsection-title">Elastic Load Balancer (ELB)</h4>
+    <ul class="list">
+        <li><strong>Description</strong>: Distributes incoming application traffic across multiple EC2 instances.</li>
+        <li><strong>Configuration</strong>:
+            <ul class="nested-list">
+                <li><strong>Health Check</strong>: Monitors the health of the instances and directs traffic to healthy
+                    instances.
+                </li>
+                <li><strong>Listeners</strong>: Listens for incoming traffic on specific ports and forwards it to the
+                    instances.
+                </li>
+                <li><strong>Security Group</strong>: Controls inbound and outbound traffic to the ELB.</li>
+            </ul>
+        </li>
+    </ul>
+    <h4 id="auto-scaling-group" class="subsubsection-title">Auto Scaling Group</h4>
+    <ul class="list">
+        <li><strong>Description</strong>: Ensures the application can handle varying traffic loads by automatically
+            adjusting the number of EC2 instances.
+        </li>
+        <li><strong>Components</strong>:
+            <ul class="nested-list">
+                <li><strong>Launch Template</strong>: Defines the configuration for EC2 instances, including AMI,
+                    instance type, and user data.
+                </li>
+                <li><strong>Scaling Policies</strong>: Define how the group scales in and out based on CloudWatch alarms
+                    or target tracking policies.
+                    <ul class="nested-list">
+                        <li><strong>Scale Out</strong>: Increase the number of instances when the average CPU
+                            utilization exceeds a threshold using CloudWatch alarms.
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>EC2 Instances</strong>: Automatically launched or terminated based on the scaling policies
+                    to handle the application load.
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h4 id="key-pairs" class="subsubsection-title">Key Pairs</h4>
+    <ul class="list">
+        <li><strong>Description</strong>: Manage SSH access to EC2 instances.</li>
+        <li><strong>Function</strong>: Securely connect to EC2 instances using SSH keys (the ASG's EC2).</li>
+    </ul>
+    <h4 id="user-data-scripts" class="subsubsection-title">User Data Scripts</h4>
+    <ul class="list">
+        <li><strong>Purpose</strong>: Automate the configuration of EC2 instances at launch.</li>
+        <li><strong>Scripts</strong>:
+            <ul class="nested-list">
+                <li><code>userdata.sh</code>: Sets up Node Exporter, installs necessary packages, runs the Flask
+                    application, and clones the web repo.
+                </li>
+                <li><code>userdata_bastion_prometheus.sh</code>: Configures the Bastion host with Node Exporter,
+                    Prometheus, and Apache server.
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h4 id="dns---route53" class="subsubsection-title">DNS - Route53</h4>
+    <ul class="list">
+        <li><strong>Description</strong>: Manages DNS settings.</li>
+        <li><strong>Components</strong>:
+            <ul class="nested-list">
+                <li><strong>Hosted Zone</strong>: Stores DNS records for the domain.</li>
+                <li><strong>Record Set</strong>: Maps the domain name to the ELB's IP address.</li>
+                <li><strong>Domain Name</strong>: Used to access the application deployed on AWS using the
+                    omer-amsterdam.com domain.
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h4 id="sns" class="subsubsection-title">SNS</h4>
+    <ul class="list">
+        <li><strong>Description</strong>: Sends notifications.</li>
+        <li><strong>Components</strong>:
+            <ul class="nested-list">
+                <li><strong>Topic</strong>: Defines the subject and message for the notification.</li>
+                <li><strong>Subscription</strong>: Specifies the endpoint to receive the notifications (email and SMS).
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+<h2 id="monitoring-and-alerting-architecture" class="section-title">Monitoring and Alerting Architecture</h2>
+<h3 id="cloudwatch" class="subsection-title">CloudWatch</h3>
+<ul class="list">
+    <li><strong>Description</strong>: Collects logs and metrics.</li>
+    <li><strong>Function</strong>: Provides monitoring and alerting capabilities.</li>
+    <li><strong>Alarms</strong>:
+        <ul class="nested-list">
+            <li><strong>CPU Utilization for ASG's EC2</strong>: Triggers when the average CPU utilization exceeds a
+                threshold, triggering a scaling policy for scale up.
+            </li>
+            <li><strong>CPU Utilization for the Bastion Host &amp; Prometheus</strong>: Triggers when the average CPU
+                utilization exceeds a threshold.
+            </li>
+            <li><strong>High request count for the ELB</strong>: Triggers when the number of requests exceeds a
+                threshold.
+            </li>
+            <li><strong>High latency for the ELB</strong>: Triggers when the latency exceeds a threshold.</li>
+            <li><strong>High HTTP 4XX count for the ELB</strong>: Triggers when the number of errors exceeds a
+                threshold.
+            </li>
+        </ul>
+    </li>
+</ul>
+<h3 id="prometheus" class="subsection-title">Prometheus</h3>
+<ul class="list">
+    <li><strong>Description</strong>: Monitors system and application performance.</li>
+    <li><strong>Components</strong>:
+        <ul class="nested-list">
+            <li><strong>Node Exporter</strong>: Collects metrics from instances.
+                <ul class="nested-list">
+                    <li><strong>Port 9100</strong>: Metrics collection endpoint.</li>
+                </ul>
+            </li>
+            <li><strong>Prometheus Server</strong>: Collects and visualizes metrics from Node Exporter.
+                <ul class="nested-list">
+                    <li><strong>Port 9090</strong>: Access Prometheus web UI and API.</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+</ul>
+<footer>
+    <p>&copy; 2024 Omer's Terraform Project.<br> All rights reserved.</p>
+</footer>
+</body>
+</html>
